@@ -48,8 +48,6 @@ public class CustomSeekbar extends SeekBar {
     /**
      * 绘制虚线
      **/
-    private Path mLinePath;
-    private PathEffect mLinePathEffect;
     private Paint mLinePaint;
 
     /**
@@ -66,6 +64,8 @@ public class CustomSeekbar extends SeekBar {
 
     private String floatProfit; //浮动利率
 
+    private float density;
+
     public CustomSeekbar(Context context) {
         this(context, null);
     }
@@ -80,20 +80,21 @@ public class CustomSeekbar extends SeekBar {
     }
 
     private void init() {
+        density = getResources().getDisplayMetrics().density;
+
         /** 初始化.9图片 **/
         mBitmap = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.seekbar_progress_tip);
         mNinePatch = new NinePatch(mBitmap, mBitmap.getNinePatchChunk(), null);
-        mBitmapMinWidth = (int) (getResources().getDisplayMetrics().density * 45);
-        mBitmapHeight = (int) (getResources().getDisplayMetrics().density * 25);
+        mBitmapMinWidth = (int) (density * 45);
+        mBitmapHeight = (int) (density * 25);
         mBitmapRect = new Rect();
         mBitmapPaint = new Paint();
         mBitmapPaint.setAntiAlias(true);
 
-        mSpace = (int) (getResources().getDisplayMetrics().density * 6); // 图片与进度条间距
-        mThumWidth = (int) (getResources().getDisplayMetrics().density * 15);
+        mSpace = (int) (density * 6); // 图片与进度条间距
+        mThumWidth = (int) (density * 15);
 
         /** 初始化Padding **/
-        float density = getResources().getDisplayMetrics().density;
         mLeftPadding = (int) (15 * density);
         mRightPadding = (int) (15 * density);
         mTopPadding = (int) (95 * density);
@@ -105,9 +106,6 @@ public class CustomSeekbar extends SeekBar {
         mLinePaint.setStyle(Paint.Style.STROKE);
         mLinePaint.setStrokeWidth(2);
         mLinePaint.setColor(Color.parseColor("#eeeeee"));
-        mLinePathEffect = new DashPathEffect(new float[]{10, 6}, 0);
-        mLinePaint.setPathEffect(mLinePathEffect);
-        mLinePath = new Path();
 
         /** 初始化文案paint **/
         mTextPanit = new Paint();
@@ -163,12 +161,15 @@ public class CustomSeekbar extends SeekBar {
             mTextPanit.setColor(redColor);
             mTextPanit.getTextBounds(transferMoney, 0, transferMoney.length(), mTextRect);
             int leftMargin = mWidth / 2 - mTextRect.width() / 2;
-            int topMargin = (int) (getResources().getDisplayMetrics().density * 20 + mTextRect.height());
+            int topMargin = (int) (density * 20 + mTextRect.height());
             canvas.drawText(transferMoney, leftMargin, topMargin, mTextPanit);
 
             /** 绘制虚线 **/
             int startX = leftMargin - 20, startY = topMargin + 20, endX = leftMargin + mTextRect.width() + 40, endY = startY;
 //          canvas.drawLine(startX, startY, endX, endY, mTextPanit);
+            DashPathEffect mLinePathEffect = new DashPathEffect(new float[]{10, 6}, 0);
+            mLinePaint.setPathEffect(mLinePathEffect);
+            Path mLinePath = new Path();
             mLinePath.moveTo(startX, startY);
             mLinePath.lineTo(endX, endY);
             canvas.drawPath(mLinePath, mLinePaint);
@@ -178,27 +179,27 @@ public class CustomSeekbar extends SeekBar {
         if (!TextUtils.isEmpty(minProfit)) {
             mTextPanit.setTextSize(36);
             mTextPanit.setColor(grayColor);
-            canvas.drawText(minProfit, mLeftPadding, mHeight / 2 + 40, mTextPanit);
+            canvas.drawText(minProfit, mLeftPadding, mHeight / 2 + density * 15, mTextPanit);
         }
 
         if (!TextUtils.isEmpty(maxProfit)) {
             mTextPanit.getTextBounds(maxProfit, 0, maxProfit.length(), mTextRect);
-            canvas.drawText(maxProfit, mWidth - mRightPadding - mTextRect.width(), mHeight / 2 + 40, mTextPanit);
+            canvas.drawText(maxProfit, mWidth - mRightPadding - mTextRect.width(), mHeight / 2 + density * 15, mTextPanit);
         }
 
         if (!TextUtils.isEmpty(minTransferMoney)) {
-            canvas.drawText(minTransferMoney, mLeftPadding, mHeight - 80, mTextPanit);
+            canvas.drawText(minTransferMoney, mLeftPadding, mHeight - density * 25, mTextPanit);
         }
 
         if (!TextUtils.isEmpty(maxTransferMoney)) {
             mTextPanit.getTextBounds(maxTransferMoney, 0, maxTransferMoney.length(), mTextRect);
-            canvas.drawText(maxTransferMoney, mWidth - mRightPadding - mTextRect.width(), mHeight - 80, mTextPanit);
+            canvas.drawText(maxTransferMoney, mWidth - mRightPadding - mTextRect.width(), mHeight - density * 25, mTextPanit);
         }
 
         /** 绘制浮动利率背景图 **/
         if (!TextUtils.isEmpty(floatProfit)) {
             Rect progressBounds = getProgressDrawable().getBounds(); //进度条的区域
-            int positionX = progressBounds.width() * getProgress() / getMax() + mThumWidth / 2 - mBitmapMinWidth / 2 + 20;
+            int positionX = progressBounds.width() * getProgress() / getMax() + mThumWidth / 2 - mBitmapMinWidth / 2 + (int)density * 6;
             int positionY = mTopPadding - mBitmapHeight - mSpace;
             mBitmapRect.set(positionX, positionY, positionX + mBitmapMinWidth, positionY + mBitmapHeight);
             mNinePatch.draw(canvas, mBitmapRect, mBitmapPaint);
@@ -206,7 +207,7 @@ public class CustomSeekbar extends SeekBar {
             mTextPanit.setTextSize(36);
             mTextPanit.setColor(whiteColor);
             mTextPanit.getTextBounds(floatProfit, 0, floatProfit.length(), mTextRect);
-            canvas.drawText(floatProfit, positionX + mBitmapMinWidth / 2 - mTextRect.width() / 2, positionY + mBitmapHeight / 2, mTextPanit);
+            canvas.drawText(floatProfit, positionX + mBitmapMinWidth / 2 - mTextRect.width() / 2, positionY + mBitmapHeight / 2 + density * 2, mTextPanit);
         }
 
     }
